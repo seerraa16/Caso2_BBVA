@@ -1,0 +1,9 @@
+stock,model,date,pred
+BBVA,univar_gru_recursive,2025-10-31,16.850948333740234
+BBVA,univar_gru_recursive,2025-11-01,16.79652214050293
+BBVA,univar_gru_recursive,2025-11-02,16.710285186767578
+BBVA,univar_gru_recursive,2025-11-03,16.61717414855957
+SANTANDER,univar_gru_recursive,2025-10-31,8.660816192626953
+SANTANDER,univar_gru_recursive,2025-11-01,8.620104789733887
+SANTANDER,univar_gru_recursive,2025-11-02,8.596981048583984
+SANTANDER,univar_gru_recursive,2025-11-03,8.575511932373047
