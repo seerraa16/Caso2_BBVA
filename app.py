@@ -17,21 +17,13 @@ import os
 # 🎨 CONFIGURACIÓN DE PÁGINA
 # =========================
 st.set_page_config(page_title="Timing-Advisor BBVA & Santander", layout="wide")
-st.markdown(
-    """
-    <style>
-        body {background-color: #0e1117; color: white;}
-        .stMetric {background-color: #1e2130; border-radius: 12px; padding: 15px;}
-        .stButton button {
-            border-radius: 10px;
-            background-color: #0096c7;
-            color: white;
-            font-weight: bold;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+body {background-color: #0e1117; color: white;}
+.stMetric {background-color: #1e2130; border-radius: 12px; padding: 15px;}
+.stButton button {border-radius: 10px; background-color: #0096c7; color: white; font-weight: bold;}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("⏱ Timing-Advisor: BBVA & Santander")
 st.markdown("### Predicciones a corto plazo y señales de inversión con modelos GRU y LSTM.")
@@ -45,7 +37,7 @@ MAX_DATE = dt.date(2025, 10, 31)
 # =========================
 # 🧠 RUTAS SEGURAS
 # =========================
-BASE_DIR = os.path.dirname(__file__)  # directorio donde está app.py
+BASE_DIR = os.path.dirname(__file__)  # No hace falta cambiar nada aquí
 models_dir = os.path.join(BASE_DIR, "modelos_prediccion_noviembre")
 
 bbva_csv_path = os.path.join(BASE_DIR, "bbva_completo.csv")
