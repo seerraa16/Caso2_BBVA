@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt  # ✅ Reemplaza plotly
+import plotly.graph_objects as go
 from tensorflow.keras.models import load_model
 from tensorflow.keras.losses import MeanSquaredError
 from sklearn.preprocessing import MinMaxScaler
@@ -12,7 +12,6 @@ from reportlab.lib import colors
 import io
 import datetime as dt
 import os
-
 
 # =========================
 # 🎨 CONFIGURACIÓN DE PÁGINA
@@ -71,22 +70,22 @@ def predict_future(series, model, n_days=5):
 
 
 def plot_interactive(series, future_dates, pred, stock_name, days_hist):
-    """Gráfico simple sin plotly, usando matplotlib."""
     last = series[-days_hist:] if len(series) > days_hist else series
-
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.plot(last.index, last.values, label='Histórico', color='#00B4D8', linewidth=2)
-    ax.plot(future_dates, pred, label='Predicción', color='orange', linestyle='--', marker='o')
-
-    ax.set_title(f"{stock_name} — Últimos {days_hist} días + Predicción (desde 03/11/2025)", fontsize=12)
-    ax.set_xlabel("Fecha")
-    ax.set_ylabel("Precio (€)")
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    fig.tight_layout()
-
-    st.pyplot(fig)
-
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=last.index, y=last.values,
+                             mode='lines', name='Histórico',
+                             line=dict(color='#00B4D8', width=2)))
+    fig.add_trace(go.Scatter(x=future_dates, y=pred,
+                             mode='lines+markers', name='Predicción',
+                             line=dict(color='orange', dash='dot'),
+                             marker=dict(size=8)))
+    fig.update_layout(
+        title=f"{stock_name} — Últimos {days_hist} días + Predicción (desde 03/11/2025)",
+        xaxis_title="Fecha", yaxis_title="Precio (€)",
+        hovermode="x unified", template="plotly_dark",
+        height=400, margin=dict(l=20, r=20, t=50, b=20)
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def generate_signal(gru_pred, lstm_pred, last_close):
