@@ -1,8 +1,8 @@
-plotly
 streamlit==1.30.0
+plotly==6.4.0
 pandas==2.1.1
 numpy==1.25.2
-tensorflow==2.16.1
+tensorflow>=2.13.0,<2.20.0
 scikit-learn==1.3.2
-reportlab==4.4.4
+reportlab==3.6.12
 matplotlib==3.8.0
