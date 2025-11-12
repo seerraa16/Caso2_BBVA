@@ -11,6 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 import io
 import datetime as dt
+from pathlib import Path
 import os
 
 # =========================
@@ -37,26 +38,27 @@ MAX_DATE = dt.date(2025, 10, 31)
 # =========================
 # RUTAS DE ARCHIVOS
 # =========================
-BASE_DIR = os.path.dirname(__file__)
-CSV_DIR = BASE_DIR  # CSV en la raíz
-MODEL_DIR = os.path.join(BASE_DIR, "modelos_prediccion_noviembre")
+BASE_DIR = Path(__file__).parent.resolve()
+CSV_DIR = BASE_DIR / "assets"  # carpeta con CSVs
+MODEL_DIR = BASE_DIR / "modelos_prediccion_noviembre"  # carpeta con modelos
 
-bbva_csv_path = os.path.join(CSV_DIR, "bbva_completo.csv")
-san_csv_path = os.path.join(CSV_DIR, "santander_completo.csv")
-bbva_model_path = os.path.join(MODEL_DIR, "BBVA_GRU_forecast.h5")
-san_model_path = os.path.join(MODEL_DIR, "SANTANDER_LSTM_forecast.h5")
+bbva_csv_path = CSV_DIR / "bbva_completo.csv"
+san_csv_path = CSV_DIR / "santander_completo.csv"
+bbva_model_path = MODEL_DIR / "BBVA_GRU_forecast.h5"
+san_model_path = MODEL_DIR / "SANTANDER_LSTM_forecast.h5"
 
 # =========================
 # FUNCIONES AUXILIARES
 # =========================
 def load_model_safe(path):
-    if not os.path.exists(path):
+    path = Path(path)
+    if not path.exists():
         st.error(f"No se encontró el modelo: {path}")
         st.stop()
     try:
-        model = load_model(path)
+        model = load_model(str(path))
     except:
-        model = load_model(path, compile=False)
+        model = load_model(str(path), compile=False)
         model.compile(optimizer='adam', loss=MeanSquaredError())
     return model
 
@@ -183,8 +185,14 @@ days_hist = st.sidebar.slider("Ver histórico de los últimos días", 30, 1000, 
 if st.button(" Generar predicciones y señales"):
     st.info("Cargando datos y modelos...")
 
+    # Verificar archivos
+    missing_files = [f for f in [bbva_csv_path, san_csv_path, bbva_model_path, san_model_path] if not f.exists()]
+    if missing_files:
+        st.error(f"No se encontraron los siguientes archivos: {missing_files}")
+        st.stop()
+
     # --- BBVA ---
-    bbva_data = pd.read_csv(bbva_csv_path)
+    bbva_data = pd.read_csv(str(bbva_csv_path))
     bbva_data['Date'] = pd.to_datetime(bbva_data['Date'])
     bbva_data = bbva_data[(bbva_data['Date'] >= pd.Timestamp(start_date)) &
                           (bbva_data['Date'] <= pd.Timestamp(end_date))]
@@ -196,7 +204,7 @@ if st.button(" Generar predicciones y señales"):
     plot_interactive(bbva_data["Close"], bbva_future_dates, bbva_pred, "BBVA", days_hist)
 
     # --- Santander ---
-    san_data = pd.read_csv(san_csv_path)
+    san_data = pd.read_csv(str(san_csv_path))
     san_data['Date'] = pd.to_datetime(san_data['Date'])
     san_data = san_data[(san_data['Date'] >= pd.Timestamp(start_date)) &
                         (san_data['Date'] <= pd.Timestamp(end_date))]
