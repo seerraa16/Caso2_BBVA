@@ -12,7 +12,6 @@ from reportlab.lib import colors
 import io
 import datetime as dt
 import os
-import gdown  # Para descargar archivos de Google Drive
 
 # =========================
 # CONFIGURACIÓN DE PÁGINA
@@ -36,31 +35,16 @@ timesteps = 60
 MAX_DATE = dt.date(2025, 10, 31)
 
 # =========================
-#  DESCARGA DE ARCHIVOS DESDE GOOGLE DRIVE
+# RUTAS DE ARCHIVOS
 # =========================
 BASE_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(BASE_DIR, "assets")
-os.makedirs(DATA_DIR, exist_ok=True)
+CSV_DIR = BASE_DIR  # CSV en la raíz
+MODEL_DIR = os.path.join(BASE_DIR, "modelos_prediccion_noviembre")
 
-# IDs de archivos en Google Drive
-files_to_download = {
-    "bbva_completo.csv": "1FRoWmay19kw-N27Jzvi8RqlCET_23sGH",
-    "santander_completo.csv": "1hEF-b3wHO3oMJFQHRkFqrTuq57OnJk7r",
-    "BBVA_GRU_forecast.h5": "1Em4WpJPYGeOKhj8Lb_Qi1vVs4SSsXnSz",
-    "SANTANDER_LSTM_forecast.h5": "1D3NJQibHNmAMb9yjrMqw10l8wA5zeb87"
-}
-
-for filename, file_id in files_to_download.items():
-    path = os.path.join(DATA_DIR, filename)
-    if not os.path.exists(path):
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, path, quiet=False)
-
-# Rutas locales tras descarga
-bbva_csv_path = os.path.join(DATA_DIR, "bbva_completo.csv")
-san_csv_path = os.path.join(DATA_DIR, "santander_completo.csv")
-bbva_model_path = os.path.join(DATA_DIR, "BBVA_GRU_forecast.h5")
-san_model_path = os.path.join(DATA_DIR, "SANTANDER_LSTM_forecast.h5")
+bbva_csv_path = os.path.join(CSV_DIR, "bbva_completo.csv")
+san_csv_path = os.path.join(CSV_DIR, "santander_completo.csv")
+bbva_model_path = os.path.join(MODEL_DIR, "BBVA_GRU_forecast.h5")
+san_model_path = os.path.join(MODEL_DIR, "SANTANDER_LSTM_forecast.h5")
 
 # =========================
 # FUNCIONES AUXILIARES
@@ -82,7 +66,7 @@ def predict_future(series, model, n_days=5):
     X = np.array([scaled[-timesteps:]]).reshape(1, timesteps, 1)
     pred_scaled = model.predict(X).flatten()
     pred = scaler.inverse_transform(pred_scaled.reshape(-1, 1)).flatten()
-    future_dates = pd.date_range(start=series.index[-1] + pd.Timedelta(days=4), periods=len(pred))
+    future_dates = pd.date_range(start=series.index[-1] + pd.Timedelta(days=1), periods=len(pred))
     return future_dates[:n_days], pred[:n_days]
 
 def plot_interactive(series, future_dates, pred, stock_name, days_hist):
@@ -96,19 +80,18 @@ def plot_interactive(series, future_dates, pred, stock_name, days_hist):
                              line=dict(color='orange', dash='dot'),
                              marker=dict(size=8)))
     fig.update_layout(
-        title=f"{stock_name} — Últimos {days_hist} días + Predicción (desde 03/11/2025)",
+        title=f"{stock_name} — Últimos {days_hist} días + Predicción",
         xaxis_title="Fecha", yaxis_title="Precio (€)",
         hovermode="x unified", template="plotly_dark",
         height=400, margin=dict(l=20, r=20, t=50, b=20)
     )
     st.plotly_chart(fig, use_container_width=True)
 
-def generate_signal(gru_pred, lstm_pred, last_close):
-    change_gru = (gru_pred[0] - last_close) / last_close
-    change_lstm = (lstm_pred[0] - last_close) / last_close
-    if change_gru > 0.002 and change_lstm > 0.002:
+def generate_signal(pred, last_close):
+    change = (pred[0] - last_close) / last_close
+    if change > 0.002:
         return "🟢 Oportunidad", "#006400"
-    elif change_gru < -0.002 and change_lstm < -0.002:
+    elif change < -0.002:
         return "🔴 Riesgo", "#8B0000"
     else:
         return "🟡 Vigilar", "#8B8B00"
@@ -186,7 +169,7 @@ def generar_informe_pdf(bbva_signal, san_signal, bbva_pred, san_pred):
     return buffer
 
 # =========================
-# ⚙️ INTERFAZ DE USUARIO
+# INTERFAZ DE USUARIO
 # =========================
 st.sidebar.header("⚙️ Configuración")
 start_date = st.sidebar.date_input("Fecha inicio histórico", dt.date(2020, 1, 1))
@@ -195,7 +178,7 @@ n_future_days = st.sidebar.slider("Días a predecir", 1, 5, 5)
 days_hist = st.sidebar.slider("Ver histórico de los últimos días", 30, 1000, 120, step=10)
 
 # =========================
-# 🚀 BOTÓN PRINCIPAL
+# BOTÓN PRINCIPAL
 # =========================
 if st.button(" Generar predicciones y señales"):
     st.info("Cargando datos y modelos...")
@@ -226,8 +209,8 @@ if st.button(" Generar predicciones y señales"):
 
     # --- Señales ---
     st.markdown("## Señales de Inversión")
-    bbva_signal, bbva_color = generate_signal(bbva_pred, bbva_pred, bbva_data["Close"][-1])
-    san_signal, san_color = generate_signal(san_pred, san_pred, san_data["Close"][-1])
+    bbva_signal, bbva_color = generate_signal(bbva_pred, bbva_data["Close"][-1])
+    san_signal, san_color = generate_signal(san_pred, san_data["Close"][-1])
 
     col1, col2 = st.columns(2)
     with col1:
@@ -243,7 +226,7 @@ if st.button(" Generar predicciones y señales"):
     st.download_button("Descargar Informe PDF", buffer, file_name="Informe_alpha-guard.pdf")
 
 # =========================
-# ⚙️ FOOTER
+# FOOTER
 # =========================
 st.markdown("---")
 st.caption("💡 alpha-guard — Dashboard financiero con RNNs, GRU, LSTM, señales y PDF con predicciones numéricas. Desarrollado por Alejandro Serrano")
