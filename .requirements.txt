@@ -1,5 +1,5 @@
 streamlit==1.30.0
-plotly==5.18.0
+plotly
 tensorflow==2.13.0
 scikit-learn==1.3.2
 pandas==2.1.1
