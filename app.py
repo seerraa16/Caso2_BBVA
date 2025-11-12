@@ -12,6 +12,7 @@ from reportlab.lib import colors
 import io
 import datetime as dt
 import os
+import gdown  # Para descargar archivos de Google Drive
 
 # =========================
 # 🎨 CONFIGURACIÓN DE PÁGINA
@@ -35,16 +36,31 @@ timesteps = 60
 MAX_DATE = dt.date(2025, 10, 31)
 
 # =========================
-# 🧠 RUTAS SEGURAS
+# 🧠 DESCARGA DE ARCHIVOS DESDE GOOGLE DRIVE
 # =========================
-BASE_DIR = os.path.dirname(__file__)  # No hace falta cambiar nada aquí
-models_dir = os.path.join(BASE_DIR, "modelos_prediccion_noviembre")
+BASE_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(BASE_DIR, "assets")
+os.makedirs(DATA_DIR, exist_ok=True)
 
-bbva_csv_path = os.path.join(BASE_DIR, "bbva_completo.csv")
-san_csv_path = os.path.join(BASE_DIR, "santander_completo.csv")
+# IDs de archivos en Google Drive
+files_to_download = {
+    "bbva_completo.csv": "1rZ0WkSHTNXd4F3bl4kHRt2XJgXzExAMP",
+    "santander_completo.csv": "1SfvS0xjhR8H1J1u_X4w8jzVQ2F1K9bQW",
+    "BBVA_GRU_forecast.h5": "1vHkH0n4X2KnOp2f9WxH_1VnU3Y5GQeJQ",
+    "SANTANDER_LSTM_forecast.h5": "1kGx6Z9uPq9Iu1d8jL6m8Yx5zO7B1R4Vc"
+}
 
-bbva_model_path = os.path.join(models_dir, "BBVA_GRU_forecast.h5")
-san_model_path = os.path.join(models_dir, "SANTANDER_LSTM_forecast.h5")
+for filename, file_id in files_to_download.items():
+    path = os.path.join(DATA_DIR, filename)
+    if not os.path.exists(path):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, path, quiet=False)
+
+# Rutas locales tras descarga
+bbva_csv_path = os.path.join(DATA_DIR, "bbva_completo.csv")
+san_csv_path = os.path.join(DATA_DIR, "santander_completo.csv")
+bbva_model_path = os.path.join(DATA_DIR, "BBVA_GRU_forecast.h5")
+san_model_path = os.path.join(DATA_DIR, "SANTANDER_LSTM_forecast.h5")
 
 # =========================
 # 🧠 FUNCIONES AUXILIARES
