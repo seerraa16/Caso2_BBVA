@@ -12,7 +12,6 @@ from reportlab.lib import colors
 import io
 import datetime as dt
 from pathlib import Path
-import os
 
 # =========================
 # CONFIGURACIÓN DE PÁGINA
@@ -39,11 +38,13 @@ MAX_DATE = dt.date(2025, 10, 31)
 # RUTAS DE ARCHIVOS
 # =========================
 BASE_DIR = Path(__file__).parent.resolve()
-CSV_DIR = BASE_DIR / "assets"  # carpeta con CSVs
-MODEL_DIR = BASE_DIR / "modelos_prediccion_noviembre"  # carpeta con modelos
 
-bbva_csv_path = CSV_DIR / "bbva_completo.csv"
-san_csv_path = CSV_DIR / "santander_completo.csv"
+# CSVs ahora están al mismo nivel que app.py
+bbva_csv_path = BASE_DIR / "bbva_completo.csv"
+san_csv_path = BASE_DIR / "santander_completo.csv"
+
+# Modelos
+MODEL_DIR = BASE_DIR / "modelos_prediccion_noviembre"
 bbva_model_path = MODEL_DIR / "BBVA_GRU_forecast.h5"
 san_model_path = MODEL_DIR / "SANTANDER_LSTM_forecast.h5"
 
@@ -96,7 +97,7 @@ def generate_signal(pred, last_close):
     elif change < -0.002:
         return "🔴 Riesgo", "#8B0000"
     else:
-        return "🟡 Vigilar", "#8B8B00"
+        return "🟡 Vigilar", "#BEB800"
 
 def generar_informe_pdf(bbva_signal, san_signal, bbva_pred, san_pred):
     buffer = io.BytesIO()
