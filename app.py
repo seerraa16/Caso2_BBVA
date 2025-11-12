@@ -44,10 +44,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 # IDs de archivos en Google Drive
 files_to_download = {
-    "bbva_completo.csv": "1rZ0WkSHTNXd4F3bl4kHRt2XJgXzExAMP",
-    "santander_completo.csv": "1SfvS0xjhR8H1J1u_X4w8jzVQ2F1K9bQW",
-    "BBVA_GRU_forecast.h5": "1vHkH0n4X2KnOp2f9WxH_1VnU3Y5GQeJQ",
-    "SANTANDER_LSTM_forecast.h5": "1kGx6Z9uPq9Iu1d8jL6m8Yx5zO7B1R4Vc"
+    "bbva_completo.csv": "1FRoWmay19kw-N27Jzvi8RqlCET_23sGH",
+    "santander_completo.csv": "1hEF-b3wHO3oMJFQHRkFqrTuq57OnJk7r",
+    "BBVA_GRU_forecast.h5": "1Em4WpJPYGeOKhj8Lb_Qi1vVs4SSsXnSz",
+    "SANTANDER_LSTM_forecast.h5": "1D3NJQibHNmAMb9yjrMqw10l8wA5zeb87"
 }
 
 for filename, file_id in files_to_download.items():
