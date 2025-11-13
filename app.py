@@ -69,8 +69,15 @@ def predict_future(series, model, n_days=5):
     X = np.array([scaled[-timesteps:]]).reshape(1, timesteps, 1)
     pred_scaled = model.predict(X).flatten()
     pred = scaler.inverse_transform(pred_scaled.reshape(-1, 1)).flatten()
-    future_dates = pd.date_range(start=series.index[-1] + pd.Timedelta(days=1), periods=len(pred))
+
+    # 🗓️ Asegurar que la primera predicción sea el 3 de noviembre (4 días después del último dato)
+    last_date = pd.to_datetime(series.index[-1]).date()
+    future_start = pd.Timestamp(last_date) + pd.Timedelta(days=4)
+    future_dates = pd.date_range(start=future_start, periods=len(pred), freq="D")
+
     return future_dates[:n_days], pred[:n_days]
+
+
 
 def plot_interactive(series, future_dates, pred, stock_name, days_hist):
     last = series[-days_hist:] if len(series) > days_hist else series
